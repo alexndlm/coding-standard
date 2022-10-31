@@ -5,6 +5,8 @@
 #[\Group\Attribute1]
 #[\Group\Attribute2]
 #[\Group\Unknown]
+#[AppAssertA\SomeAssert]
+#[AppAssertB\SomeAssert]
 #[UnknownOrder]
 class Whatever
 {
@@ -19,6 +21,8 @@ class Whatever
 	#[\Group\Attribute1]
 	#[\Group\Attribute2]
 	#[\Group\Unknown]
+	#[AppAssertA\SomeAssert]
+	#[AppAssertB\SomeAssert]
 	#[UnknownOrder]
 	public function method2()
 	{

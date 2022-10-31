@@ -13,9 +13,11 @@ use function array_keys;
 use function asort;
 use function count;
 use function ltrim;
+use function strnatcasecmp;
 use function strpos;
 use function substr;
 use function trim;
+use function uasort;
 use const T_ATTRIBUTE;
 use const T_ATTRIBUTE_END;
 
@@ -26,6 +28,9 @@ class AttributesOrderSniff implements Sniff
 
 	/** @var list<string> */
 	public $order = [];
+
+	/** @var bool */
+	public $orderAlphabetically = false;
 
 	/**
 	 * @return array<int, (int|string)>
@@ -45,8 +50,8 @@ class AttributesOrderSniff implements Sniff
 			return;
 		}
 
-		if ($this->order === []) {
-			throw new UnexpectedValueException('Attributes order not specified.');
+		if ($this->order === [] && $this->orderAlphabetically === false) {
+			throw new UnexpectedValueException('Attributes order and/or order alphabetically not specified.');
 		}
 
 		$this->order = $this->normalizeOrder($this->order);
@@ -76,6 +81,15 @@ class AttributesOrderSniff implements Sniff
 
 		} while (true);
 
+		if ($this->orderAlphabetically) {
+			uasort($attributesGroups, static function (array $attributesGroup1, array $attributesGroup2): int {
+				$attribute1 = $attributesGroup1[0];
+				$attribute2 = $attributesGroup2[0];
+
+				return strnatcasecmp($attribute1->getName(), $attribute2->getName());
+			});
+		}
+
 		$actualOrder = [];
 
 		foreach ($attributesGroups as $attributesGroupNo => $attributesGroup) {
@@ -87,6 +101,10 @@ class AttributesOrderSniff implements Sniff
 					|| (
 						substr($attributeNameOnPosition, -1) === '\\'
 						&& strpos($attributeName, $attributeNameOnPosition) === 0
+					)
+					|| (
+						substr($attributeNameOnPosition, -1) === '*'
+						&& strpos($attributeName, substr($attributeNameOnPosition, 0, -1)) === 0
 					)
 				) {
 					$actualOrder[$attributesGroupNo] = $orderPosition;
